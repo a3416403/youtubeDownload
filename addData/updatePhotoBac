@@ -1,0 +1,21 @@
+import cv2 as cv
+import numpy as np
+
+# 读取图像文件
+img = cv.imread('input.jpg')
+
+# 创建一个 mask，将背景设置为确切的值
+mask = np.zeros(img.shape[:2], np.uint8)
+bgdModel = np.zeros((1,65), np.float64)
+fgdModel = np.zeros((1,65), np.float64)
+rect = (10, 10, img.shape[1]-20, img.shape[0]-20)
+cv.grabCut(img, mask, rect, bgdModel, fgdModel, 5, cv.GC_INIT_WITH_RECT)
+
+# 将 mask 中为 0 的点（背景）置为指定的颜色，其他点保持不变
+mask = np.where((mask==2)|(mask==0), 1, 0).astype('uint8')
+background_color = (255, 255, 255)  # 替换为需要的颜色
+mask = mask[:,:,np.newaxis]
+new_img = (mask * background_color) + ((1 - mask) * img)
+
+# 保存替换背景色后的图像
+cv.imwrite('output.jpg', new_img)
